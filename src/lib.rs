@@ -32,7 +32,8 @@ const K: [u32; 64] = [
 
 pub fn sha256(data: &[u8]) -> [u8; 32] {
     let mut h: [u32; 8] = [
-        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
+        0x5be0cd19,
     ];
     let bit_len = (data.len() as u64).wrapping_mul(8);
     let mut msg = data.to_vec();
@@ -44,26 +45,51 @@ pub fn sha256(data: &[u8]) -> [u8; 32] {
     for chunk in msg.chunks(64) {
         let mut w = [0u32; 64];
         for i in 0..16 {
-            w[i] = u32::from_be_bytes([chunk[i * 4], chunk[i * 4 + 1], chunk[i * 4 + 2], chunk[i * 4 + 3]]);
+            w[i] = u32::from_be_bytes([
+                chunk[i * 4],
+                chunk[i * 4 + 1],
+                chunk[i * 4 + 2],
+                chunk[i * 4 + 3],
+            ]);
         }
         for i in 16..64 {
             let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
             let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
-            w[i] = w[i - 16].wrapping_add(s0).wrapping_add(w[i - 7]).wrapping_add(s1);
+            w[i] = w[i - 16]
+                .wrapping_add(s0)
+                .wrapping_add(w[i - 7])
+                .wrapping_add(s1);
         }
         let (mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut hh) =
             (h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7]);
         for i in 0..64 {
             let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
             let ch = (e & f) ^ ((!e) & g);
-            let t1 = hh.wrapping_add(s1).wrapping_add(ch).wrapping_add(K[i]).wrapping_add(w[i]);
+            let t1 = hh
+                .wrapping_add(s1)
+                .wrapping_add(ch)
+                .wrapping_add(K[i])
+                .wrapping_add(w[i]);
             let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
             let maj = (a & b) ^ (a & c) ^ (b & c);
             let t2 = s0.wrapping_add(maj);
-            hh = g; g = f; f = e; e = d.wrapping_add(t1); d = c; c = b; b = a; a = t1.wrapping_add(t2);
+            hh = g;
+            g = f;
+            f = e;
+            e = d.wrapping_add(t1);
+            d = c;
+            c = b;
+            b = a;
+            a = t1.wrapping_add(t2);
         }
-        h[0] = h[0].wrapping_add(a); h[1] = h[1].wrapping_add(b); h[2] = h[2].wrapping_add(c); h[3] = h[3].wrapping_add(d);
-        h[4] = h[4].wrapping_add(e); h[5] = h[5].wrapping_add(f); h[6] = h[6].wrapping_add(g); h[7] = h[7].wrapping_add(hh);
+        h[0] = h[0].wrapping_add(a);
+        h[1] = h[1].wrapping_add(b);
+        h[2] = h[2].wrapping_add(c);
+        h[3] = h[3].wrapping_add(d);
+        h[4] = h[4].wrapping_add(e);
+        h[5] = h[5].wrapping_add(f);
+        h[6] = h[6].wrapping_add(g);
+        h[7] = h[7].wrapping_add(hh);
     }
     let mut out = [0u8; 32];
     for i in 0..8 {
@@ -93,7 +119,9 @@ pub fn agt(content: &[u8]) -> String {
 // HBP hot-path row — TAG|k=v|...|json=0
 // =========================================================================
 fn esc(v: &str) -> String {
-    v.replace('\\', "\\\\").replace('|', "\\p").replace('\n', "\\n")
+    v.replace('\\', "\\\\")
+        .replace('|', "\\p")
+        .replace('\n', "\\n")
 }
 pub fn encode_row(tag: &str, fields: &[(&str, &str)]) -> String {
     let mut s = String::from(tag);
@@ -203,7 +231,11 @@ pub fn to_hyperbehcs(bytes: &[u8]) -> Vec<[u16; HYPERBEHCS_DIM]> {
     tuples
 }
 /// Inverse of the HyperBEHCS reshape: 60D tuples -> bytes (needs glyph count + orig_len).
-pub fn from_hyperbehcs(tuples: &[[u16; HYPERBEHCS_DIM]], glyph_count: usize, orig_len: usize) -> Vec<u8> {
+pub fn from_hyperbehcs(
+    tuples: &[[u16; HYPERBEHCS_DIM]],
+    glyph_count: usize,
+    orig_len: usize,
+) -> Vec<u8> {
     let mut glyphs = Vec::with_capacity(glyph_count);
     for t in tuples {
         for &g in t.iter() {
@@ -231,7 +263,10 @@ impl Default for ReceiptChain {
 }
 impl ReceiptChain {
     pub fn new() -> Self {
-        Self { prev: GENESIS.to_string(), rows: Vec::new() }
+        Self {
+            prev: GENESIS.to_string(),
+            rows: Vec::new(),
+        }
     }
     pub fn append(&mut self, row: &str) -> String {
         let body = format!("{row}|prev_event_hash={}", self.prev);
@@ -254,14 +289,18 @@ pub fn verify_chain(receipts: &[String]) -> bool {
     let mut prev = GENESIS.to_string();
     for r in receipts {
         let marker = "|event_hash=";
-        let Some(pos) = r.rfind(marker) else { return false };
+        let Some(pos) = r.rfind(marker) else {
+            return false;
+        };
         let body = &r[..pos];
         let claimed = &r[pos + marker.len()..];
         if sha256_hex(body.as_bytes()) != claimed {
             return false;
         }
         let pm = "|prev_event_hash=";
-        let Some(pp) = body.rfind(pm) else { return false };
+        let Some(pp) = body.rfind(pm) else {
+            return false;
+        };
         if &body[pp + pm.len()..] != prev {
             return false;
         }
@@ -313,7 +352,13 @@ impl QPrismCube {
     pub fn new(pid: Pid, content: &[u8]) -> Self {
         let selector = derive_selector(&pid, content);
         let glyphs = to_level(content, Level::Behcs1024);
-        QPrismCube { pid, selector, glyphs, addr: agt(content), orig_len: content.len() }
+        QPrismCube {
+            pid,
+            selector,
+            glyphs,
+            addr: agt(content),
+            orig_len: content.len(),
+        }
     }
     /// Reconstruct the exact content from the cube (lossless — the bijection inverse).
     pub fn reconstruct(&self) -> Vec<u8> {
@@ -415,12 +460,21 @@ impl SessionCapsule {
         let mut audit = ReceiptChain::new();
         audit.append(&encode_row(
             "CAPSULE-PROPOSE",
-            &[("sender", &sender.hex()), ("receiver", &receiver.hex()), ("mode", mode.name())],
+            &[
+                ("sender", &sender.hex()),
+                ("receiver", &receiver.hex()),
+                ("mode", mode.name()),
+            ],
         ));
         SessionCapsule {
-            sender, receiver, mode, nonce,
-            sender_armed: false, receiver_armed: false,
-            state: CapsuleState::Proposed, audit,
+            sender,
+            receiver,
+            mode,
+            nonce,
+            sender_armed: false,
+            receiver_armed: false,
+            state: CapsuleState::Proposed,
+            audit,
         }
     }
     /// Arm from one side. Capsule opens only when BOTH sides have armed.
@@ -435,21 +489,25 @@ impl SessionCapsule {
         } else {
             return;
         }
-        self.audit.append(&encode_row("CAPSULE-ARM", &[("by", &side.hex())]));
+        self.audit
+            .append(&encode_row("CAPSULE-ARM", &[("by", &side.hex())]));
         if self.sender_armed && self.receiver_armed {
             self.state = CapsuleState::Armed;
-            self.audit.append(&encode_row("CAPSULE-OPEN", &[("state", "armed")]));
+            self.audit
+                .append(&encode_row("CAPSULE-OPEN", &[("state", "armed")]));
         }
     }
     /// Either side can collapse immediately.
     pub fn collapse(&mut self) {
         self.state = CapsuleState::Collapsed;
-        self.audit.append(&encode_row("CAPSULE-COLLAPSE", &[("state", "collapsed")]));
+        self.audit
+            .append(&encode_row("CAPSULE-COLLAPSE", &[("state", "collapsed")]));
     }
     /// Revoke (recovery/revoke plane).
     pub fn revoke(&mut self) {
         self.state = CapsuleState::Revoked;
-        self.audit.append(&encode_row("CAPSULE-REVOKE", &[("state", "revoked")]));
+        self.audit
+            .append(&encode_row("CAPSULE-REVOKE", &[("state", "revoked")]));
     }
     pub fn is_open(&self) -> bool {
         self.state == CapsuleState::Armed
@@ -496,7 +554,13 @@ pub fn dbbh_send(cube: &QPrismCube, capsule: &mut SessionCapsule) -> Result<Cros
     rows.push(encode_row("GLYPHS", &[("v", &glyph_str.join(","))]));
     // seal into the capsule audit chain (N-Nest)
     let body = format!("SHADOW|agt={}|glyphs={}", cube.addr, cube.glyphs.len());
-    let receipt = capsule.audit.append(&encode_row("SHADOW", &[("agt", &cube.addr), ("glyphs", &cube.glyphs.len().to_string())]));
+    let receipt = capsule.audit.append(&encode_row(
+        "SHADOW",
+        &[
+            ("agt", &cube.addr),
+            ("glyphs", &cube.glyphs.len().to_string()),
+        ],
+    ));
     let _ = body;
     Ok(Crossing { rows, receipt })
 }
@@ -524,7 +588,11 @@ pub fn dbbh_receive(crossing: &Crossing, capsule: &SessionCapsule) -> Result<Vec
             }
         } else if let Some(rest) = row.strip_prefix("GLYPHS|v=") {
             let payload = rest.strip_suffix("|json=0").unwrap_or(rest);
-            glyphs = payload.split(',').filter(|s| !s.is_empty()).filter_map(|s| s.parse::<u16>().ok()).collect();
+            glyphs = payload
+                .split(',')
+                .filter(|s| !s.is_empty())
+                .filter_map(|s| s.parse::<u16>().ok())
+                .collect();
         }
     }
     // LOSSLESS reconstruction — the bijection inverse
@@ -546,12 +614,16 @@ pub struct ContentStore {
 }
 impl ContentStore {
     pub fn new() -> Self {
-        Self { map: HashMap::new() }
+        Self {
+            map: HashMap::new(),
+        }
     }
     /// Retain content; returns its AGT address.
     pub fn put(&mut self, content: &[u8]) -> String {
         let a = agt(content);
-        self.map.entry(a.clone()).or_insert_with(|| content.to_vec());
+        self.map
+            .entry(a.clone())
+            .or_insert_with(|| content.to_vec());
         a
     }
     pub fn get(&self, addr: &str) -> Option<&[u8]> {
@@ -567,7 +639,10 @@ impl ContentStore {
 
 /// ADDRESS-ONLY send: emit just the AGT header (NO glyph payload). The mass stays in the
 /// sender's store; only the shadow-coordinate crosses the capsule.
-pub fn dbbh_send_addressed(cube: &QPrismCube, capsule: &mut SessionCapsule) -> Result<Crossing, Held> {
+pub fn dbbh_send_addressed(
+    cube: &QPrismCube,
+    capsule: &mut SessionCapsule,
+) -> Result<Crossing, Held> {
     match capsule.state {
         CapsuleState::Armed => {}
         CapsuleState::Collapsed | CapsuleState::Revoked => return Err(Held::Collapsed),
@@ -583,7 +658,9 @@ pub fn dbbh_send_addressed(cube: &QPrismCube, capsule: &mut SessionCapsule) -> R
             ("nonce", &hex8(&capsule.nonce)),
         ],
     )];
-    let receipt = capsule.audit.append(&encode_row("SHADOW-ADDR", &[("agt", &cube.addr)]));
+    let receipt = capsule
+        .audit
+        .append(&encode_row("SHADOW-ADDR", &[("agt", &cube.addr)]));
     Ok(Crossing { rows, receipt })
 }
 
@@ -634,8 +711,14 @@ mod unit {
 
     #[test]
     fn sha256_kat() {
-        assert_eq!(sha256_hex(b""), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-        assert_eq!(sha256_hex(b"abc"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+        assert_eq!(
+            sha256_hex(b""),
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        );
+        assert_eq!(
+            sha256_hex(b"abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
     }
 
     #[test]
@@ -645,7 +728,12 @@ mod unit {
         for lvl in [Level::Behcs64, Level::Behcs256, Level::Behcs1024] {
             let syms = to_level(data, lvl);
             let back = from_level(&syms, lvl, data.len());
-            assert_eq!(&back, data, "{} round-trip must be byte-identical", lvl.name());
+            assert_eq!(
+                &back,
+                data,
+                "{} round-trip must be byte-identical",
+                lvl.name()
+            );
         }
     }
 
@@ -663,7 +751,12 @@ mod unit {
         // T_jk o T_ij = T_ik : 256->64->1024 == 256->1024 (same bytes underneath)
         let data = b"path independent translation across the ladder";
         let direct = to_level(data, Level::Behcs1024);
-        let via64 = relate(&to_level(data, Level::Behcs64), Level::Behcs64, Level::Behcs1024, data.len());
+        let via64 = relate(
+            &to_level(data, Level::Behcs64),
+            Level::Behcs64,
+            Level::Behcs1024,
+            data.len(),
+        );
         assert_eq!(direct, via64);
     }
 
@@ -685,7 +778,11 @@ mod unit {
         let cb = QPrismCube::new(pb, content);
         assert_ne!(ca.selector, cb.selector, "selector must be PID-specific");
         assert_eq!(ca.addr, cb.addr, "content address is PID-independent");
-        assert_eq!(ca.reconstruct(), content, "cube reconstruct must be lossless");
+        assert_eq!(
+            ca.reconstruct(),
+            content,
+            "cube reconstruct must be lossless"
+        );
         assert_eq!(ca.selector.len(), 60);
     }
 

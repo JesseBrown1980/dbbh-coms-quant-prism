@@ -28,7 +28,10 @@ fn full_capsule_lifecycle_propose_arm_send_receive_collapse() {
 
     // the audit chain is complete, ordered, hash-matched (N-Nest gate)
     assert!(verify_chain(cap.audit.rows()));
-    assert!(cap.audit.rows().len() >= 5, "propose/arm/arm/open/shadow/collapse recorded");
+    assert!(
+        cap.audit.rows().len() >= 5,
+        "propose/arm/arm/open/shadow/collapse recorded"
+    );
 }
 
 #[test]
@@ -53,7 +56,10 @@ fn a_stranger_pid_cannot_arm() {
     let mut cap = SessionCapsule::propose(s, r, ComsMode::AiToAi, b"x");
     cap.arm(s);
     cap.arm(intruder); // ignored — not a party to the capsule
-    assert!(!cap.is_open(), "an outside PID cannot supply the second consent");
+    assert!(
+        !cap.is_open(),
+        "an outside PID cannot supply the second consent"
+    );
     cap.arm(r);
     assert!(cap.is_open());
 }
