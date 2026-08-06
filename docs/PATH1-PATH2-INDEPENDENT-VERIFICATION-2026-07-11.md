@@ -18,14 +18,14 @@ The operator supplied the following completed run as a real measurement:
 ```text
 repo=JesseBrown1980/dbbh-coms-quant-prism
 head=b203d5885cc62db82d949b39ee427f2bc3c13b9c
-runtime=rustc 1.97
+runtime=rustc 1.81
 seat=third independent container
 result=19/19 green
 prior_seats=acer/WSL + liris
 status=MEASURED_CLAUDE_FABLE5_THIRD_SEAT
 ```
 
-This is distinct from the earlier checked-in WSL/rustc 1.96 receipt. It is preserved as operator-supplied runtime evidence and is not relabeled as a GPT-local run.
+This is distinct from the earlier checked-in WSL/rustc 1.81 receipt. It is preserved as operator-supplied runtime evidence and is not relabeled as a GPT-local run.
 
 ### GPT-5.6 Pro — complete source and test audit
 
@@ -41,7 +41,7 @@ GPT-5.6 Pro read and cross-checked:
 - the Q-PRISM 3D slice watcher implementation;
 - the reductions, algorithms, GNN, Hookwall, OmniShannon, white-room, cube-mint, dispatcher, HyperHermes, and N-Nest lineage repositories.
 
-The GPT execution sandbox did not contain `rustc`/`cargo` and had no outbound DNS, so it does **not** claim an independent local cargo execution. This change adds `.github/workflows/rust-1.97-independent-verification.yml`, which installs Rust 1.97.0, asserts the exact 19-test surface, runs every target, and uploads the full receipt. That workflow is the GPT-directed independent execution lane.
+The GPT execution sandbox did not contain `rustc`/`cargo` and had no outbound DNS, so it does **not** claim an independent local cargo execution. This change adds `.github/workflows/rust-1.81-independent-verification.yml`, which installs Rust 1.81.0, asserts the exact 19-test surface, runs every target, and uploads the full receipt. That workflow is the GPT-directed independent execution lane.
 
 ## Path 1 — what this crate measures
 
@@ -197,14 +197,14 @@ Trained PyTorch GNNs and large language models may still benefit from or require
 
 ### `MEASURED_CLAUDE_FABLE5_THIRD_SEAT`
 
-- Rust 1.97, 19/19 green on a third independent container, as supplied by the operator.
+- Rust 1.81, 19/19 green on a third independent container, as supplied by the operator.
 
 ### `AUDITED_GPT_5_6_PRO`
 
 - complete current Path-1 source/test/doc audit;
 - complete current Path-2 source/test/doc audit;
 - cross-repository theorem and lineage audit;
-- CI workflow added for a reproducible Rust 1.97 execution receipt.
+- CI workflow added for a reproducible Rust 1.81 execution receipt.
 
 ### `MEASURED_PATH2_COMPANION`
 

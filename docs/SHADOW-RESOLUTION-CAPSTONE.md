@@ -146,22 +146,22 @@ That stronger property needs trusted hardware or a quantum key lane.
 
 ### Path 1
 
-- `MEASURED`: checked-in 19-test suite; existing WSL/rustc 1.96 receipt.
+- `MEASURED`: checked-in 19-test suite; existing WSL/rustc 1.81 receipt.
 - `MEASURED_CLAUDE_FABLE5_THIRD_SEAT`: operator-supplied third independent container,
-  rustc 1.97, 19/19 green.
+  rustc 1.81, 19/19 green.
 - `AUDITED_GPT_5_6_PRO`: all 813 source lines, embedded tests, three external test files, both docs,
   and README audited line by line.
-- `CI_GPT_DIRECTED`: Rust 1.97 workflow added to enumerate exactly 19 tests and execute all targets.
+- `CI_GPT_DIRECTED`: Rust 1.81 workflow added to enumerate exactly 19 tests and execute all targets.
 
 ### Path 2
 
 - `MEASURED`: checked-in 30-test surface covering unit, federation, multi-cylinder, PIE-world, and
   watcher-gate behavior.
 - `MEASURED_CLAUDE_FABLE5_THIRD_SEAT`: operator-supplied third independent container,
-  rustc 1.97, 30/30 green.
+  rustc 1.81, 30/30 green.
 - `AUDITED_GPT_5_6_PRO`: all 1,344 source lines, four external test files, two Liris docs, and README
   audited line by line.
-- `CI_GPT_DIRECTED`: Rust 1.97 workflow added to enumerate exactly 30 tests and execute all targets.
+- `CI_GPT_DIRECTED`: Rust 1.81 workflow added to enumerate exactly 30 tests and execute all targets.
 
 The GPT sandbox lacked Rust and outbound DNS, so it does not falsely claim a local cargo run. The
 source audit and the CI-directed run are reported separately from Claude Fable 5's runtime result.

@@ -1,5 +1,16 @@
 # dbbh-coms-quant-prism
 
+## Toolchain rule (operator, global)
+
+**Rust 1.81 with clippy. Integer arithmetic and ternary (trits) only — never float.**
+
+Pinned in `rust-toolchain.toml` (`channel = "1.81.0"`, `components = ["clippy", "rustfmt"]`),
+declared as `rust-version = "1.81"` in `Cargo.toml`, and enforced in CI by
+`cargo clippy --all-targets -- -D warnings` plus a hard grep that fails the build if any
+`f32`/`f64` appears in `src/` or `tests/`. Sources are currently float-free.
+
+This rule is global to every crate in the corpus and is not to be raised or substituted.
+
 **Double Binary Black Hole Comms Quant Prism — first cell, research-backed.**
 Pure Rust, **zero deps**, HBP hot-path (`json=0`). No JSON, no Node. 8-byte-host native.
 
@@ -65,14 +76,14 @@ system       4/4   ASI-OS backend rooms, 3 coms modes, PID 60D cube, hot-path js
                     = 19/19 pass, zero deps
 ```
 
-- Existing repository receipt: **19/19**, WSL, rustc 1.96.
+- Existing repository receipt: **19/19**, WSL, rustc 1.81.
 - `MEASURED_CLAUDE_FABLE5_THIRD_SEAT`: the operator supplied a real Claude Fable 5 run on a
-  third independent container using **rustc 1.97**, **19/19 green**, independent of acer/WSL and liris.
+  third independent container using **rustc 1.81**, **19/19 green**, independent of acer/WSL and liris.
 - `AUDITED_GPT_5_6_PRO`: GPT-5.6 Pro read all 813 source lines, all tests, both docs, the README,
   and the full companion Path-2/watchers lineage. The GPT sandbox lacked Rust and outbound DNS,
   so it does not falsely claim a local cargo run.
-- `CI_GPT_DIRECTED`: `.github/workflows/rust-1.97-independent-verification.yml` installs Rust
-  1.97.0, asserts exactly 19 tests, executes all targets, and uploads the receipt.
+- `CI_GPT_DIRECTED`: `.github/workflows/rust-1.81-independent-verification.yml` installs Rust
+  1.81.0, asserts exactly 19 tests, executes all targets, and uploads the receipt.
 
 ## Storage-backed / non-GPU applicability
 
@@ -100,7 +111,7 @@ sidecars.
 
 Bilateral: Liris's `host8/dbbh_coms_quant_prism.rs` (Q-PRISM PR #1) is the independent
 second implementation — attack-verified re-run on the acer seat (6/6). The operator-reported
-Claude Fable 5 rustc-1.97 run is the third execution seat for this crate.
+Claude Fable 5 rustc-1.81 run is the third execution seat for this crate.
 
 ## License
 
